@@ -1,11 +1,11 @@
 use std::io;
 use std::collections;
+use std::collections::HashMap;
 
 macro_rules! parse_input {
     ($x:expr, $t:ident) => ($x.trim().parse::<$t>().unwrap())
 }
 
-#[derive(From)]
 enum ActionType {
     Cast,
     OpponentCast,
@@ -15,7 +15,7 @@ enum ActionType {
 
 struct Action {
     id: i32,
-    action_type: ActionType,
+    action_type: String,
     tiers_0_ingredient: i32,
     tiers_1_ingredient: i32,
     tiers_2_ingredient: i32,
@@ -28,10 +28,10 @@ struct Action {
 }
 
 struct Player {
-    tiers_0_inventory: i23,
-    tiers_1_inventory: i23,
-    tiers_2_inventory: i23,
-    tiers_3_inventory: i23,
+    tiers_0_inventory: i32,
+    tiers_1_inventory: i32,
+    tiers_2_inventory: i32,
+    tiers_3_inventory: i32,
     score: i32,
 }
 
@@ -40,7 +40,7 @@ fn main() {
     // game loop
     loop {
         let mut brewings: Vec<Action> = Vec::new();
-        let mut players: [Player; 2] = Default::default();
+        let mut players: HashMap<i32, Player> = HashMap::new();
 
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
@@ -61,9 +61,9 @@ fn main() {
             let castable = parse_input!(inputs[9], i32); // in the first league: always 0; later: 1 if this is a castable player spell
             let repeatable = parse_input!(inputs[10], i32); // for the first two leagues: always 0; later: 1 if this is a repeatable player spell
 
-            match action_type {
-                String::from("BREW") =>
-                    brewings.push(Point {
+            match Some(&*action_type) {
+                Some("BREW") =>
+                    brewings.push(Action {
                         id,
                         action_type,
                         tiers_0_ingredient,
@@ -88,24 +88,30 @@ fn main() {
             let tiers_2_inventory = parse_input!(inputs[2], i32);
             let tiers_3_inventory = parse_input!(inputs[3], i32);
             let score = parse_input!(inputs[4], i32); // amount of rupees
-            players[i] = Player {
+            players.insert(i as i32, Player {
                 tiers_0_inventory,
                 tiers_1_inventory,
                 tiers_2_inventory,
                 tiers_3_inventory,
                 score,
-            };
+            });
         }
+
+        let brew = get_best_potion(&brewings);
 
         // Write an action using println!("message...");
         // To debug: eprintln!("Debug message...");
 
 
         // in the first league: BREW <id> | WAIT; later: BREW <id> | CAST <id> [<times>] | LEARN <id> | REST | WAIT
-        println!("BREW 0");
+        match brew {
+            Some(x) => println!("BREW {}", x.id),
+            None => println!("WAIT")
+        }
     }
 
-    fn get_best_potion(players: array<Player>, brewing: Vec<Action>) {
-        brewing.iter().max_by()
+    fn get_best_potion(brewing: & Vec<Action>) -> Option<&Action> {
+        let best = brewing.iter().max_by_key(|brew| brew.price);
+        best
     }
 }
