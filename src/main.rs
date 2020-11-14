@@ -196,15 +196,15 @@ fn main() {
     fn get_best_spell<'a>(spells: &'a mut Vec<Spell>, player: &mut Player, mut missing_ingredients: [i32; 4]) -> Option<&'a Spell> {
         let mut spell;
         let best_spell = loop {
-            spell = spells.iter().max_by_key(|spell| spell.add_useful_ingredient(missing_ingredients));
-            if spell.unwrap().enough_ingredient(&player) && spell.unwrap().castable != 0 { break spell } else {
+            spell = spells.iter().max_by_key(|s| s.add_useful_ingredient(missing_ingredients)).unwrap();
+            if spell.enough_ingredient(&player) && spell.castable != 0 { break Some(spell) } else {
                 missing_ingredients = [
-                    spell.unwrap().tiers_0_ingredient - player.tiers_0_inventory,
-                    spell.unwrap().tiers_1_ingredient - player.tiers_1_inventory,
-                    spell.unwrap().tiers_2_ingredient - player.tiers_2_inventory,
-                    spell.unwrap().tiers_3_ingredient - player.tiers_3_inventory,
+                    spell.tiers_0_ingredient - player.tiers_0_inventory,
+                    spell.tiers_1_ingredient - player.tiers_1_inventory,
+                    spell.tiers_2_ingredient - player.tiers_2_inventory,
+                    spell.tiers_3_ingredient - player.tiers_3_inventory,
                 ];
-                spells.retain(|s| s.id != spell.unwrap().id);
+                spells.retain(|s| s.id != spell.id);
             }
             if spells.is_empty() { break None }
         };
